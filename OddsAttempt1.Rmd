@@ -1,0 +1,45 @@
+---
+title: "PlayingWithOdds"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+```
+
+
+```{r}
+install.packages("lehman")
+```
+
+
+```{r}
+install.packages("retrosheet")
+```
+
+```{r}
+Bos19 <- retrosheet::get_retrosheet("play", year = 2019, team = "BOS")
+
+```
+
+```{r}
+plays <- (Bos192[["play"]])
+
+sub <- (Bos192[["sub"]])
+data <- (Bos192[["data"]])
+com <- (Bos192[["com"]])
+start <- (Bos192[["start"]])
+info <- (Bos192[["info"]])
+```
+
+
+```{r}
+
+was19 <- read.csv("/Users/XanderPA/Documents/GitHub/retrosheet-csv/csv/2019WAS.EVN.regular.event.csv", header = TRUE)
+#was192 <- was19 %>% drop_na()
+#wasPlays <- was19 %>% select(was19$GAME_ID, was19$OUTS_CT, was19$PITCH_SEQ_TX,was19$BAT_ID,was19$PIT_ID, was19$BAT_HAND_CD,was19$PIT_HAND_CD, was19$EVENT_TX)
+```
+
+
+
