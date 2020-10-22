@@ -23,6 +23,7 @@ library(dplyr)
 library(ggplot2)
 library(sjmisc)
 library(reticulate)
+library(RColorBrewer)
 ```
 
 ## Getting Data
@@ -37,25 +38,30 @@ mlbdata <-  read.csv("/Users/XanderPA/Desktop/Sports Analytics/baseballresearch/
 
 ```
 
+```{r} 
+#Same as above. This data can be found in the repository: https://github.com/AmherstSportsAnalytics/baseballresearch under stats
+
+savantHitter <-  read.csv("/Users/XanderPA/Desktop/Sports Analytics/baseballresearch/Stats/MLBSavantHitter.csv", header = TRUE)
+savantPitcher <-  read.csv("/Users/XanderPA/Desktop/Sports Analytics/baseballresearch/Stats/MLBSavantPitcher.csv", header = TRUE)
+```
 
 
-```{r, echo=FALSE}
+```{r}
 #Creating binary HR function
 mlbdata <- mlbdata %>%  mutate(isHR = ifelse(str_detect(EVENT_TX, "HR"), 1, 0))
- 
 ```
 
 ```{r}
-#Sampling Data
+#Sampling data into 2000 random selections
 set.seed(123)
 sampledata <- sample(mlbdata, 2000)  
-sampledata <- sampledata%>%select(BAT_ID, PIT_ID, EVENT_TX, isHR)
+sampledataHR <- sampledata%>%select(BAT_ID, PIT_ID, EVENT_TX, isHR)
 
 set.seed(100)
 sampledata2 <- sample(mlbdata, 2000)  
-sampledata2 <- sampledata%>%select(BAT_ID, PIT_ID, EVENT_TX, isHR)
+sampledata2HR <- sampledata%>%select(BAT_ID, PIT_ID, EVENT_TX, isHR)
 
-ggplot(sampledata, aes(x = isHR)) + geom_bar() + xlab("Was it a HR?")
+ggplot(sampledata, aes(x = isHR)) + geom_bar() + xlab("Was it a HR?") + labs(title = "Home Run Count")
 ```
 
 
@@ -75,9 +81,19 @@ sampledata <- sampledata%>% mutate(predictedHR = exp(predict(simpleHitter, sampl
 ```
 
 
+```{r}
+ggplot(savantHitter, aes(x = xwoba, y = b_home_run, col = exit_velocity_avg)) + geom_point() + geom_smooth()  +
+   scale_colour_gradient(low = "yellow", high = "red", na.value = NA) + xlab("Expected Weight On Base Average") + ylab("Home Runs") + labs(title = "Plot of Home Runs by xwOBA")
+
+```
 
 ```{r}
+ggplot(savantPitcher, aes(x= savantPitcher$p_strikeout, colour = savantPitcher
+                         $pitch_hand)) + geom_histogram() + xlab("strikeouts") + labs(title = "Histogram of Pitcher Strikeouts")
 ```
+
+
+
 
 
 
