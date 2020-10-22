@@ -1,0 +1,83 @@
+---
+output:
+  pdf_document:
+    fig_height: 3
+    fig_width: 5
+  html_document:
+    fig_height: 3
+    fig_width: 5
+  word_document:
+    fig_height: 3
+    fig_width: 5
+---
+
+## Sports Analytics Club 
+## Intro to Baseball Research
+### Xander Schwartz
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(mosaic)
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(sjmisc)
+library(reticulate)
+```
+
+## Getting Data
+
+```{r}
+## Download the data from here: https://drive.google.com/file/d/1eMmELedQQhEbP0pBh6q9jqAwNS8nPu33/view?usp=sharing
+
+
+# Get pathname of file with ⌥⌘C on file name
+mlbdata <-  read.csv("/Users/XanderPA/Desktop/Sports Analytics/baseballresearch/2019mlb.csv", header = TRUE)
+  
+
+```
+
+
+
+```{r, echo=FALSE}
+#Creating binary HR function
+mlbdata <- mlbdata %>%  mutate(isHR = ifelse(str_detect(EVENT_TX, "HR"), 1, 0))
+ 
+```
+
+```{r}
+#Sampling Data
+set.seed(123)
+sampledata <- sample(mlbdata, 2000)  
+sampledata <- sampledata%>%select(BAT_ID, PIT_ID, EVENT_TX, isHR)
+
+set.seed(100)
+sampledata2 <- sample(mlbdata, 2000)  
+sampledata2 <- sampledata%>%select(BAT_ID, PIT_ID, EVENT_TX, isHR)
+
+ggplot(sampledata, aes(x = isHR)) + geom_bar() + xlab("Was it a HR?")
+```
+
+
+
+```{r}
+#Really bad logistic regression
+
+simpleHitter <- glm(isHR ~ sampledata$BAT_ID + sampledata$PIT_ID , family=binomial(Logit),data=sampledata)
+
+probabilities <- simpleHitters %>% predict(sampledata, type = "response")
+predicted.classes <- ifelse(probabilities > 0.5, "pos", "neg")
+# Model accuracy
+mean(predicted.classes == sampledata$isHR)
+
+sampledata <- sampledata%>% mutate(predictedHR = exp(predict(simpleHitter, sampledata) )) 
+
+```
+
+
+
+```{r}
+```
+
+
+

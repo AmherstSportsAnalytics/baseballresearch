@@ -9,37 +9,82 @@ library(dplyr)
 ```
 
 
-```{r}
-install.packages("lehman")
-```
-
-
-```{r}
-install.packages("retrosheet")
-```
-
-```{r}
-Bos19 <- retrosheet::get_retrosheet("play", year = 2019, team = "BOS")
-
-```
-
-```{r}
-plays <- (Bos192[["play"]])
-
-sub <- (Bos192[["sub"]])
-data <- (Bos192[["data"]])
-com <- (Bos192[["com"]])
-start <- (Bos192[["start"]])
-info <- (Bos192[["info"]])
-```
 
 
 ```{r}
 
-was19 <- read.csv("/Users/XanderPA/Documents/GitHub/retrosheet-csv/csv/2019WAS.EVN.regular.event.csv", header = TRUE)
-#was192 <- was19 %>% drop_na()
-#wasPlays <- was19 %>% select(was19$GAME_ID, was19$OUTS_CT, was19$PITCH_SEQ_TX,was19$BAT_ID,was19$PIT_ID, was19$BAT_HAND_CD,was19$PIT_HAND_CD, was19$EVENT_TX)
+bal19 <- read.csv("/Users/XanderPA/Desktop/Sports Analytics/baseballresearch/2013-19 Events/2019BAL.EVA.regular.event.csv", header = TRUE)
+tor19 <- read.csv("/Users/XanderPA/Desktop/Sports Analytics/baseballresearch/2013-19 Events/2019TOR.EVA.regular.event.csv", header = TRUE)
+nyy19 <- read.csv("/Users/XanderPA/Desktop/Sports Analytics/baseballresearch/2013-19 Events/2019NYa.EVA.regular.event.csv", header = TRUE)
+tb19 <- read.csv("/Users/XanderPA/Desktop/Sports Analytics/baseballresearch/2013-19 Events/2019tba.EVA.regular.event.csv", header = TRUE)
+bos19 <- read.csv("/Users/XanderPA/Desktop/Sports Analytics/baseballresearch/2013-19 Events/2019bos.EVA.regular.event.csv", header = TRUE)
+
+ALeast <- rbind(bal19,tor19,nyy19,tb19, bos19) 
 ```
+
+
+```{r}
+kc19 <- read.csv("/Users/XanderPA/Desktop/Sports Analytics/baseballresearch/2013-19 Events/2019kca.EVA.regular.event.csv", header = TRUE)
+min19 <- read.csv("/Users/XanderPA/Desktop/Sports Analytics/baseballresearch/2013-19 Events/2019min.EVA.regular.event.csv", header = TRUE)
+cle19 <- read.csv("/Users/XanderPA/Desktop/Sports Analytics/baseballresearch/2013-19 Events/2019cle.EVA.regular.event.csv", header = TRUE)
+det19 <- read.csv("/Users/XanderPA/Desktop/Sports Analytics/baseballresearch/2013-19 Events/2019det.EVA.regular.event.csv", header = TRUE)
+cws19 <- read.csv("/Users/XanderPA/Desktop/Sports Analytics/baseballresearch/2013-19 Events/2019CHA.EVA.regular.event.csv", header = TRUE)
+
+ALcentral <- rbind(kc19,min19,cle19, det19, cws19)
+```
+
+```{r}
+oak19 <- read.csv("/Users/XanderPA/Desktop/Sports Analytics/baseballresearch/2013-19 Events/2019oak.EVA.regular.event.csv", header = TRUE)
+sea19 <- read.csv("/Users/XanderPA/Desktop/Sports Analytics/baseballresearch/2013-19 Events/2019sea.EVA.regular.event.csv", header = TRUE)
+tex19 <- read.csv("/Users/XanderPA/Desktop/Sports Analytics/baseballresearch/2013-19 Events/2019tex.EVA.regular.event.csv", header = TRUE)
+hou19 <- read.csv("/Users/XanderPA/Desktop/Sports Analytics/baseballresearch/2013-19 Events/2019hou.EVA.regular.event.csv", header = TRUE)
+laa19 <- read.csv("/Users/XanderPA/Desktop/Sports Analytics/baseballresearch/2013-19 Events/2019ana.EVA.regular.event.csv", header = TRUE)
+
+ALwest <- rbind(oak19, sea19, tex19, hou19, laa19)
+```
+
+```{r}
+was19 <- read.csv("/Users/XanderPA/Desktop/Sports Analytics/baseballresearch/2013-19 Events/2019WAS.EVN.regular.event.csv", header = TRUE)
+atl19 <- read.csv("/Users/XanderPA/Desktop/Sports Analytics/baseballresearch/2013-19 Events/2019atl.EVN.regular.event.csv", header = TRUE)
+phi19 <- read.csv("/Users/XanderPA/Desktop/Sports Analytics/baseballresearch/2013-19 Events/2019phi.EVN.regular.event.csv", header = TRUE)
+nym19 <- read.csv("/Users/XanderPA/Desktop/Sports Analytics/baseballresearch/2013-19 Events/2019nyn.EVN.regular.event.csv", header = TRUE)
+mia19 <- read.csv("/Users/XanderPA/Desktop/Sports Analytics/baseballresearch/2013-19 Events/2019mia.EVN.regular.event.csv", header = TRUE)
+
+NLeast <- rbind(was19,atl19,phi19,nym19,mia19)
+```
+
+
+```{r}
+pit19 <- read.csv("/Users/XanderPA/Desktop/Sports Analytics/baseballresearch/2013-19 Events/2019pit.EVN.regular.event.csv", header = TRUE)
+stl19 <- read.csv("/Users/XanderPA/Desktop/Sports Analytics/baseballresearch/2013-19 Events/2019sln.EVN.regular.event.csv", header = TRUE)
+mil19 <- read.csv("/Users/XanderPA/Desktop/Sports Analytics/baseballresearch/2013-19 Events/2019mil.EVN.regular.event.csv", header = TRUE)
+cin19 <- read.csv("/Users/XanderPA/Desktop/Sports Analytics/baseballresearch/2013-19 Events/2019cin.EVN.regular.event.csv", header = TRUE)
+chc19 <- read.csv("/Users/XanderPA/Desktop/Sports Analytics/baseballresearch/2013-19 Events/2019chn.EVN.regular.event.csv", header = TRUE)
+
+NLcentral <- rbind(pit19,stl19,mil19,cin19, chc19)
+```
+
+
+```{r}
+
+col19 <- read.csv("/Users/XanderPA/Desktop/Sports Analytics/baseballresearch/2013-19 Events/2019col.EVN.regular.event.csv", header = TRUE)
+sf19 <- read.csv("/Users/XanderPA/Desktop/Sports Analytics/baseballresearch/2013-19 Events/2019sfn.EVN.regular.event.csv", header = TRUE)
+sd19 <- read.csv("/Users/XanderPA/Desktop/Sports Analytics/baseballresearch/2013-19 Events/2019sdn.EVN.regular.event.csv", header = TRUE)
+ari19 <- read.csv("/Users/XanderPA/Desktop/Sports Analytics/baseballresearch/2013-19 Events/2019ari.EVN.regular.event.csv", header = TRUE)
+lad19 <- read.csv("/Users/XanderPA/Desktop/Sports Analytics/baseballresearch/2013-19 Events/2019lan.EVN.regular.event.csv", header = TRUE)
+NLwest <- rbind(lad19, sf19, sd19, ari19, col19)
+```
+
+
+```{r}
+MLB19 <- rbind(ALeast, ALcentral, ALwest, NLeast, NLcentral, NLwest)
+
+```
+
+```{r}
+write.csv(MLB19, "/Users/XanderPA/Desktop/Sports Analytics/baseballresearch/2019mlb.csv")
+```
+
 
 
 
