@@ -1,0 +1,179 @@
+---
+output:
+  pdf_document:
+    fig_height: 3
+    fig_width: 5
+  html_document:
+    fig_height: 3
+    fig_width: 5
+  word_document:
+    fig_height: 3
+    fig_width: 5
+---
+
+## Sports Analytics Club 
+## Intro to Baseball Research
+### Jack Dove
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(mosaic)
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(sjmisc)
+library(reticulate)
+library(RColorBrewer)
+library(tidyverse)
+```
+
+## Getting Data
+
+```{r, include=FALSE}
+## Download the data from here: https://drive.google.com/file/d/1eMmELedQQhEbP0pBh6q9jqAwNS8nPu33/view?usp=sharing
+mlbdata <-  read.csv("~/Desktop/Data Science/2019mlb.csv", header = TRUE)
+head(mlbdata, n=5)
+```
+
+```{r, include=FALSE} 
+#Coming up with situational data from every play (pre-pitch conditions + the outcome)
+
+for (i in 1:10) {
+
+set.seed(i)
+mlbdatasample<- sample(mlbdata, 10000)
+
+mlbdatasituations <- mlbdatasample %>%
+  select(INN_CT, BAT_HOME_ID, OUTS_CT, BALLS_CT, STRIKES_CT, AWAY_SCORE_CT, HOME_SCORE_CT, BASE1_RUN_ID, 
+         BASE2_RUN_ID, BASE3_RUN_ID, EVENT_TX, LEADOFF_FL, PH_FL, BAT_LINEUP_ID) %>%
+  #Making variables factors, not numbers
+  mutate(inning = as.factor(INN_CT)) %>%
+  mutate(home_team_hitting = as.factor(BAT_HOME_ID)) %>%
+  mutate(outs = as.factor(OUTS_CT)) %>%
+  mutate(count = as.factor(paste0(BALLS_CT, "_", STRIKES_CT))) %>%
+  mutate(score_difference = as.factor(ifelse(home_team_hitting == 1, HOME_SCORE_CT - AWAY_SCORE_CT, AWAY_SCORE_CT - HOME_SCORE_CT))) %>%
+  mutate(BaseSituation = 
+ifelse((BASE1_RUN_ID == "")& (BASE2_RUN_ID == "" ) & (BASE3_RUN_ID == ""),"Empty", 
+ifelse( !(BASE1_RUN_ID) == "" & (BASE2_RUN_ID== "") & (BASE3_RUN_ID== ""), "First",
+ifelse((BASE1_RUN_ID== "")& !(BASE2_RUN_ID== "") & (BASE3_RUN_ID== ""),"Second",
+ifelse((BASE1_RUN_ID== "")& (BASE2_RUN_ID== "") & !(BASE3_RUN_ID== ""), "Third",
+ifelse(!(BASE1_RUN_ID== "")& !(BASE2_RUN_ID== "") & (BASE3_RUN_ID== ""), "First&Second",
+ifelse(!(BASE1_RUN_ID== "")& (BASE2_RUN_ID== "") & !(BASE3_RUN_ID== ""), "First&Third", 
+ifelse((BASE1_RUN_ID== "")& !(BASE2_RUN_ID== "") & !(BASE3_RUN_ID== ""), "Second&Third",
+ifelse(!(BASE1_RUN_ID== "")& !(BASE2_RUN_ID== "") & !(BASE3_RUN_ID== ""), "Loaded", "Error")
+)))))))) %>%
+  mutate(isHR = ifelse(str_detect(EVENT_TX, "HR"), 1, 0)) %>%
+  mutate(leadoff_flag = as.factor(LEADOFF_FL)) %>%
+  mutate(pinch_hitter_flag = as.factor(PH_FL)) %>%
+  mutate(lineup_number = as.factor(BAT_LINEUP_ID))
+
+#Find five best models based on AIC (relative prediction quality)
+library(glmulti)
+glmulti.lm.out <-
+    glmulti(isHR~inning+home_team_hitting+outs+count+score_difference+BaseSituation+leadoff_flag+pinch_hitter_flag+lineup_number, data=mlbdatasituations,
+            level = 1,              
+            method = "h",            
+            crit = "aic",           
+            confsetsize = 5,        
+            plotty = F, report = F,  
+            fitfunction = "glm")      
+glmulti.lm.out@formulas  
+
+#Best model
+bestmodel <- glm(family="binomial", data=mlbdatasituations, isHR~count+leadoff_flag+lineup_number)
+summary(bestmodel)
+
+
+#Resample for testing of model 
+set.seed(i+100)
+mlbdatasample<- sample(mlbdata, 10000)
+
+mlbdatasituations_test <- mlbdatasample %>%
+  select(INN_CT, BAT_HOME_ID, OUTS_CT, BALLS_CT, STRIKES_CT, AWAY_SCORE_CT, HOME_SCORE_CT, BASE1_RUN_ID, 
+         BASE2_RUN_ID, BASE3_RUN_ID, EVENT_TX, LEADOFF_FL, PH_FL, BAT_LINEUP_ID) %>%
+  #Making variables factors, not numbers
+  mutate(inning = as.factor(INN_CT)) %>%
+  mutate(home_team_hitting = as.factor(BAT_HOME_ID)) %>%
+  mutate(outs = as.factor(OUTS_CT)) %>%
+  filter(BALLS_CT < 4 & STRIKES_CT < 3) %>%
+  mutate(count = as.factor(paste0(BALLS_CT, "_", STRIKES_CT))) %>%
+  mutate(score_difference = as.factor(ifelse(home_team_hitting == 1, HOME_SCORE_CT - AWAY_SCORE_CT, AWAY_SCORE_CT - HOME_SCORE_CT))) %>%
+  mutate(BaseSituation = 
+ifelse((BASE1_RUN_ID == "")& (BASE2_RUN_ID == "" ) & (BASE3_RUN_ID == ""),"Empty", 
+ifelse( !(BASE1_RUN_ID) == "" & (BASE2_RUN_ID== "") & (BASE3_RUN_ID== ""), "First",
+ifelse((BASE1_RUN_ID== "")& !(BASE2_RUN_ID== "") & (BASE3_RUN_ID== ""),"Second",
+ifelse((BASE1_RUN_ID== "")& (BASE2_RUN_ID== "") & !(BASE3_RUN_ID== ""), "Third",
+ifelse(!(BASE1_RUN_ID== "")& !(BASE2_RUN_ID== "") & (BASE3_RUN_ID== ""), "First&Second",
+ifelse(!(BASE1_RUN_ID== "")& (BASE2_RUN_ID== "") & !(BASE3_RUN_ID== ""), "First&Third", 
+ifelse((BASE1_RUN_ID== "")& !(BASE2_RUN_ID== "") & !(BASE3_RUN_ID== ""), "Second&Third",
+ifelse(!(BASE1_RUN_ID== "")& !(BASE2_RUN_ID== "") & !(BASE3_RUN_ID== ""), "Loaded", "Error")
+)))))))) %>%
+  mutate(isHR = ifelse(str_detect(EVENT_TX, "HR"), 1, 0)) %>%
+  mutate(leadoff_flag = as.factor(LEADOFF_FL)) %>%
+  mutate(pinch_hitter_flag = as.factor(PH_FL)) %>%
+  mutate(lineup_number = as.factor(BAT_LINEUP_ID))
+
+#Probabilities of home runs yielded from best model
+probabilities <- bestmodel %>% 
+  predict(mlbdatasituations_test, type = "response")
+probabilities1 <- data.frame(probabilities) 
+
+#Average home run probability
+probs[i] <- mean(probabilities1$probabilities)
+
+}
+
+#Proportion of plays that resulted in HRs in 2019
+mlbhrproportion <- mlbdata %>%
+   mutate(isHR = ifelse(str_detect(EVENT_TX, "HR"), 1, 0)) %>%
+   select(isHR) %>%
+   summarize(HRproportion = mean(isHR))
+
+percent_diff <- (mean(probs) - mlbhrproportion)*100/mlbhrproportion
+
+paste0("Model Average Probability from 10 random samples: ", mean(probs))
+paste0("Average Actual Play Proportion of Homeruns: ", mlbhrproportion)
+paste0("Percent Difference: ", percent_diff, "%")
+#sensitivity specificity
+```
+
+
+```{r}
+#Creating binary HR function
+mlbdata <- mlbdata %>%  mutate(isHR = ifelse(str_detect(EVENT_TX, "HR"), 1, 0))
+```
+
+```{r}
+#Sampling data into 2000 random selections
+set.seed(123)
+sampledata <- sample(mlbdata, 2000)  
+sampledataHR <- sampledata%>%select(BAT_ID, PIT_ID, EVENT_TX, isHR)
+set.seed(100)
+sampledata2 <- sample(mlbdata, 2000)  
+sampledata2HR <- sampledata%>%select(BAT_ID, PIT_ID, EVENT_TX, isHR)
+ggplot(sampledata, aes(x = isHR)) + geom_bar() + xlab("Was it a HR?") + labs(title = "Home Run Count")
+```
+
+
+
+```{r}
+#Really bad logistic regression
+simpleHitter <- glm(isHR ~ sampledata$BAT_ID + sampledata$PIT_ID , family=binomial(Logit),data=sampledata)
+probabilities <- simpleHitters %>% predict(sampledata, type = "response")
+predicted.classes <- ifelse(probabilities > 0.5, "pos", "neg")
+# Model accuracy
+mean(predicted.classes == sampledata$isHR)
+sampledata <- sampledata%>% mutate(predictedHR = exp(predict(simpleHitter, sampledata) )) 
+```
+
+
+```{r}
+ggplot(savantHitter, aes(x = xwoba, y = b_home_run, col = exit_velocity_avg)) + geom_point() + geom_smooth()  +
+   scale_colour_gradient(low = "yellow", high = "red", na.value = NA) + xlab("Expected Weight On Base Average") + ylab("Home Runs") + labs(title = "Plot of Home Runs by xwOBA")
+```
+
+```{r}
+ggplot(savantPitcher, aes(x= savantPitcher$p_strikeout, colour = savantPitcher
+                         $pitch_hand)) + geom_histogram() + xlab("strikeouts") + labs(title = "Histogram of Pitcher Strikeouts")
+```
+
